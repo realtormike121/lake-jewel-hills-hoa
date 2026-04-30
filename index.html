@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lake Jewel Hills HOA — Orlando, Florida</title>
+  <meta name="description" content="Official website of the Lake Jewel Hills Homeowners Association, Orlando, Florida. Powered by One Oak Realty Corp." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    /* ===================================================
+       DESIGN TOKENS
+       =================================================== */
+    :root {
+      --green-deep:   #2d4a2d;
+      --green-mid:    #4a7c59;
+      --green-light:  #7aab8a;
+      --stone:        #c8b89a;
+      --stone-light:  #ede5d8;
+      --blue-lake:    #5b8fa8;
+      --blue-light:   #a8c8d8;
+      --brown-warm:   #7a5c3a;
+      --white:        #fafaf8;
+      --text-dark:    #1e2a1e;
+      --text-mid:     #3d4f3d;
+      --text-light:   #6b7c6b;
+      --border:       #d8cfc0;
+      --shadow:       rgba(45,74,45,0.12);
+      --font-serif:   'Playfair Display', Georgia, serif;
+      --font-sans:    'Inter', system-ui, sans-serif;
+      --nav-h:        72px;
+      --radius:       8px;
+      --transition:   0.3s ease;
+    }
+
+    /* ===================================================
+       RESET & BASE
+       =================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body { font-family: var(--font-sans); color: var(--text-dark); background: var(--white); line-height: 1.7; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+    h1,h2,h3,h4,h5 { font-family: var(--font-serif); line-height: 1.25; }
+
+    /* ===================================================
+       UTILITIES
+       =================================================== */
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+    .section    { padding: 80px 0; }
+    .section-sm { padding: 48px 0; }
+    .section-title { font-size: clamp(1.8rem,3vw,2.6rem); color: var(--green-deep); margin-bottom: 12px; }
+    .section-subtitle { font-size: 1.05rem; color: var(--text-light); margin-bottom: 40px; max-width: 620px; }
+    .divider { width: 56px; height: 3px; background: var(--stone); margin: 16px 0 32px; border-radius: 2px; }
+    .btn { display:inline-block; padding:12px 28px; border-radius:var(--radius); font-family:var(--font-sans); font-size:0.92rem; font-weight:600; letter-spacing:0.04em; cursor:pointer; border:2px solid transparent; transition:all var(--transition); }
+    .btn-primary { background:var(--green-deep); color:var(--white); border-color:var(--green-deep); }
+    .btn-primary:hover { background:var(--green-mid); border-color:var(--green-mid); }
+    .btn-outline { background:transparent; color:var(--green-deep); border-color:var(--green-deep); }
+    .btn-outline:hover { background:var(--green-deep); color:var(--white); }
+    .tag { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.78rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; }
+    .tag-green { background:var(--green-light); color:var(--green-deep); }
+    .tag-blue  { background:var(--blue-light);  color:#1e3a4a; }
+    .tag-stone { background:var(--stone-light); color:var(--brown-warm); }
+
+    /* ===================================================
+       NAVIGATION
+       =================================================== */
+    #navbar { position:fixed; top:0; left:0; right:0; height:var(--nav-h); background:rgba(250,250,248,0.97); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); z-index:1000; transition:box-shadow var(--transition); }
+    #navbar.scrolled { box-shadow:0 2px 20px var(--shadow); }
+    .nav-inner { max-width:1140px; margin:0 auto; padding:0 24px; height:100%; display:flex; align-items:center; justify-content:space-between; }
+    .nav-brand { display:flex; flex-direction:column; line-height:1.1; }
+    .nav-brand-name { font-family:var(--font-serif); font-size:1.22rem; font-weight:700; color:var(--green-deep); }
+    .nav-brand-sub  { font-size:0.68rem; color:var(--text-light); letter-spacing:0.08em; text-transform:uppercase; }
+    .nav-links { display:flex; align-items:center; gap:4px; }
+    .nav-links a { padding:8px 12px; border-radius:6px; font-size:0.85rem; font-weight:500; color:var(--text-mid); transition:all var(--transition); white-space:nowrap; }
+    .nav-links a:hover, .nav-links a.active { background:var(--stone-light); color:var(--green-deep); }
+    .nav-links a.nav-cta { background:var(--green-deep); color:var(--white); padding:8px 16px; margin-left:8px; }
+    .nav-links a.nav-cta:hover { background:var(--green-mid); }
+    .hamburger { display:none; flex-direction:column; justify-content:center; align-items:center; width:40px; height:40px; cursor:pointer; gap:5px; background:none; border:none; padding:4px; }
+    .hamburger span { display:block; width:24px; height:2px; background:var(--green-deep); border-radius:2px; transition:all var(--transition); }
+    .hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity:0; }
+    .hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+    .nav-mobile { display:none; position:fixed; top:var(--nav-h); left:0; right:0; background:var(--white); border-bottom:1px solid var(--border); padding:16px 24px 24px; z-index:999; flex-direction:column; gap:4px; box-shadow:0 8px 24px var(--shadow); }
+    .nav-mobile.open { display:flex; }
+    .nav-mobile a { padding:12px 16px; border-radius:6px; font-size:0.95rem; font-weight:500; color:var(--text-mid); transition:all var(--transition); }
+    .nav-mobile a:hover { background:var(--stone-light); color:var(--green-deep); }
+    .page-section { padding-top:var(--nav-h); margin-top:calc(-1 * var(--nav-h)); }
+
+    /* ===================================================
+       HERO
+       =================================================== */
+    #home {
+      min-height: 100vh;
+      background: linear-gradient(160deg, rgba(30,42,30,0.65) 0%, rgba(45,74,45,0.45) 100%),
+                  url('photos/luminaries-street.jpeg') center/cover no-repeat;
+      display:flex; align-items:center;
+      padding-top:var(--nav-h);
+      position:relative; overflow:hidden;
+    }
+    .hero-content { position:relative; z-index:1; max-width:740px; animation:fadeUp 0.9s ease both; }
+    .hero-eyebrow { font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--stone); font-weight:600; margin-bottom:20px; }
+    .hero-title { font-family:var(--font-serif); font-size:clamp(2.4rem,6vw,4rem); color:var(--white); line-height:1.12; margin-bottom:24px; }
+    .hero-title em { color:var(--stone); font-style:italic; }
+    .hero-desc { font-size:clamp(1rem,2vw,1.1rem); color:rgba(250,250,248,0.88); max-width:540px; margin-bottom:36px; line-height:1.75; }
+    .hero-actions { display:flex; gap:16px; flex-wrap:wrap; }
+    .hero-scroll { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; color:rgba(250,250,248,0.7); font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; animation:bounce 2s infinite; cursor:pointer; }
+    .hero-scroll svg { width:20px; height:20px; }
+
+    /* Quick links bar */
+    .quick-links { background:var(--green-deep); }
+    .quick-links-inner { display:grid; grid-template-columns:repeat(4,1fr); }
+    .quick-link-item { display:flex; flex-direction:column; align-items:center; padding:28px 16px; color:rgba(250,250,248,0.85); border-right:1px solid rgba(255,255,255,0.1); transition:all var(--transition); cursor:pointer; text-align:center; text-decoration:none; }
+    .quick-link-item:last-child { border-right:none; }
+    .quick-link-item:hover { background:rgba(255,255,255,0.08); color:var(--white); }
+    .quick-link-item svg { width:28px; height:28px; margin-bottom:10px; opacity:0.8; }
+    .quick-link-item span { font-size:0.82rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; }
+
+    /* ===================================================
+       ABOUT
+       =================================================== */
+    #about { background:var(--white); }
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
+    .about-img-wrap { position:relative; }
+    .about-img-wrap img { border-radius:12px; width:100%; aspect-ratio:4/3; object-fit:cover; box-shadow:0 16px 48px var(--shadow); }
+    .about-img-badge { position:absolute; bottom:-20px; right:-20px; background:var(--green-deep); color:var(--white); padding:20px 24px; border-radius:10px; text-align:center; box-shadow:0 8px 24px rgba(45,74,45,0.3); }
+    .about-img-badge strong { display:block; font-family:var(--font-serif); font-size:2rem; line-height:1; }
+    .about-img-badge span { font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; }
+    .about-features { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:32px; }
+    .about-feature { display:flex; gap:12px; align-items:flex-start; padding:16px; background:var(--stone-light); border-radius:var(--radius); border-left:3px solid var(--green-mid); }
+    .about-feature svg { width:20px; height:20px; flex-shrink:0; color:var(--green-mid); margin-top:2px; }
+    .about-feature p { font-size:0.88rem; color:var(--text-mid); line-height:1.5; }
+    .about-feature strong { display:block; font-size:0.9rem; color:var(--text-dark); margin-bottom:2px; }
+
+    /* ===================================================
+       PHOTO GALLERY STRIP
+       =================================================== */
+    .photo-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin-top:48px; }
+    .photo-strip-item { aspect-ratio:4/3; overflow:hidden; border-radius:8px; }
+    .photo-strip-item img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s ease; }
+    .photo-strip-item:hover img { transform:scale(1.04); }
+
+    /* ===================================================
+       AMENITIES
+       =================================================== */
+    #amenities { background:var(--stone-light); }
+    .amenities-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .amenity-card { background:var(--white); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px var(--shadow); transition:transform var(--transition),box-shadow var(--transition); }
+    .amenity-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px var(--shadow); }
+    .amenity-icon-wrap { height:80px; display:flex; align-items:center; justify-content:center; background:var(--green-deep); }
+    .amenity-icon-wrap svg { width:36px; height:36px; color:rgba(250,250,248,0.9); }
+    .amenity-body { padding:20px; }
+    .amenity-body h3 { font-size:1.1rem; color:var(--green-deep); margin-bottom:8px; }
+    .amenity-body p { font-size:0.88rem; color:var(--text-mid); line-height:1.6; }
+
+    /* ===================================================
+       MAP
+       =================================================== */
+    #map-section { background:var(--white); }
+    .map-layout { display:grid; grid-template-columns:1fr 380px; gap:40px; align-items:start; }
+    #neighborhood-map { height:480px; border-radius:12px; overflow:hidden; box-shadow:0 8px 32px var(--shadow); border:1px solid var(--border); }
+    .map-sidebar h3 { font-size:1.3rem; color:var(--green-deep); margin-bottom:8px; }
+    .map-sidebar p { font-size:0.9rem; color:var(--text-mid); margin-bottom:20px; }
+    .street-list { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+    .street-item { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--stone-light); border-radius:var(--radius); font-size:0.9rem; color:var(--text-mid); }
+    .street-item svg { width:18px; height:18px; color:var(--green-mid); flex-shrink:0; }
+    .map-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .map-stat { background:var(--green-deep); color:var(--white); padding:16px; border-radius:var(--radius); text-align:center; }
+    .map-stat strong { display:block; font-family:var(--font-serif); font-size:1.6rem; }
+    .map-stat span { font-size:0.72rem; letter-spacing:0.07em; text-transform:uppercase; opacity:0.8; }
+
+    /* ===================================================
+       NEWS
+       =================================================== */
+    #news { background:var(--stone-light); }
+    .news-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .news-card { background:var(--white); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px var(--shadow); transition:transform var(--transition); }
+    .news-card:hover { transform:translateY(-3px); }
+    .news-card-body { padding:20px; }
+    .news-meta { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .news-date { font-size:0.78rem; color:var(--text-light); }
+    .news-card-body h3 { font-size:1.05rem; color:var(--green-deep); margin-bottom:8px; line-height:1.35; }
+    .news-card-body p { font-size:0.86rem; color:var(--text-mid); line-height:1.6; }
+    .news-read-more { display:inline-block; margin-top:12px; font-size:0.82rem; font-weight:600; color:var(--green-mid); letter-spacing:0.04em; }
+    .news-read-more:hover { color:var(--green-deep); }
+
+    /* ===================================================
+       LUMINARIES
+       =================================================== */
+    #luminaries { background:var(--white); }
+    .luminaries-hero {
+      position:relative; border-radius:16px; overflow:hidden; margin-bottom:56px;
+    }
+    .luminaries-hero img { width:100%; height:420px; object-fit:cover; object-position:center 40%; display:block; }
+    .luminaries-hero-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(to top, rgba(20,30,20,0.82) 0%, rgba(20,30,20,0.3) 60%, transparent 100%);
+      display:flex; flex-direction:column; justify-content:flex-end;
+      padding:48px;
+      color:var(--white);
+    }
+    .luminaries-hero-overlay h2 { font-size:clamp(1.8rem,3vw,2.8rem); margin-bottom:12px; }
+    .luminaries-hero-overlay p { font-size:1rem; opacity:0.88; max-width:580px; margin-bottom:24px; }
+    .lum-stats { display:flex; gap:32px; flex-wrap:wrap; }
+    .lum-stat strong { display:block; font-family:var(--font-serif); font-size:1.6rem; }
+    .lum-stat span { font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.8; }
+
+    .luminaries-layout { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+    .luminaries-info h3 { font-size:1.4rem; color:var(--green-deep); margin-bottom:12px; }
+    .luminaries-info p { font-size:0.92rem; color:var(--text-mid); margin-bottom:16px; line-height:1.7; }
+    .lum-detail-list { display:flex; flex-direction:column; gap:10px; margin:20px 0; }
+    .lum-detail-item { display:flex; gap:12px; align-items:flex-start; font-size:0.9rem; color:var(--text-mid); }
+    .lum-detail-item svg { width:18px; height:18px; color:var(--stone); flex-shrink:0; margin-top:2px; }
+
+    /* Luminary photo grid */
+    .lum-photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:32px; }
+    .lum-photo-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:8px; }
+    .lum-photo-grid img:first-child { grid-column:1/-1; aspect-ratio:16/7; }
+
+    /* ===================================================
+       HOMES FOR SALE
+       =================================================== */
+    #homes { background:var(--stone-light); }
+    .homes-filter { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:32px; }
+    .filter-btn { padding:8px 20px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer; border:2px solid var(--border); background:var(--white); color:var(--text-mid); transition:all var(--transition); }
+    .filter-btn.active, .filter-btn:hover { background:var(--green-deep); color:var(--white); border-color:var(--green-deep); }
+    .homes-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .home-card { background:var(--white); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px var(--shadow); transition:transform var(--transition),box-shadow var(--transition); }
+    .home-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px var(--shadow); }
+    .home-card-header { padding:20px 20px 0; display:flex; justify-content:space-between; align-items:flex-start; }
+    .home-price { font-family:var(--font-serif); font-size:1.4rem; color:var(--green-deep); font-weight:700; }
+    .home-card-body { padding:12px 20px 16px; }
+    .home-card-body h3 { font-size:1rem; color:var(--text-dark); margin-bottom:4px; }
+    .home-address { font-size:0.82rem; color:var(--text-light); margin-bottom:12px; }
+    .home-specs { display:flex; gap:16px; font-size:0.82rem; color:var(--text-mid); margin-bottom:14px; }
+    .home-spec { display:flex; align-items:center; gap:5px; }
+    .home-spec svg { width:14px; height:14px; color:var(--green-mid); }
+    .home-card-body p { font-size:0.84rem; color:var(--text-mid); line-height:1.55; }
+    .home-card-footer { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text-light); }
+    .home-card-footer a { font-size:0.82rem; font-weight:600; color:var(--green-mid); }
+    .home-card-footer a:hover { color:var(--green-deep); }
+    .homes-cta { text-align:center; margin-top:40px; padding:40px; background:var(--white); border-radius:12px; box-shadow:0 4px 16px var(--shadow); }
+    .homes-cta h3 { font-size:1.5rem; color:var(--green-deep); margin-bottom:8px; }
+    .homes-cta p { color:var(--text-mid); margin-bottom:20px; font-size:0.95rem; }
+
+    /* ===================================================
+       EVENTS
+       =================================================== */
+    #events { background:var(--white); }
+    .events-layout { display:grid; grid-template-columns:1fr 360px; gap:48px; align-items:start; }
+    .event-list { display:flex; flex-direction:column; gap:16px; }
+    .event-item { display:flex; gap:20px; padding:20px; background:var(--stone-light); border-radius:10px; border-left:4px solid var(--green-mid); transition:transform var(--transition); }
+    .event-item:hover { transform:translateX(4px); }
+    .event-date-box { flex-shrink:0; width:60px; height:60px; background:var(--green-deep); color:var(--white); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+    .event-date-box .month { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; opacity:0.8; }
+    .event-date-box .day { font-family:var(--font-serif); font-size:1.5rem; line-height:1; }
+    .event-info h3 { font-size:1rem; color:var(--green-deep); margin-bottom:4px; }
+    .event-info p { font-size:0.86rem; color:var(--text-mid); line-height:1.5; }
+    .event-meta { display:flex; gap:12px; margin-top:6px; flex-wrap:wrap; }
+    .event-meta span { font-size:0.78rem; color:var(--text-light); display:flex; align-items:center; gap:4px; }
+    .event-meta svg { width:13px; height:13px; }
+    .mini-calendar { background:var(--white); border-radius:12px; padding:24px; box-shadow:0 4px 20px var(--shadow); border:1px solid var(--border); }
+    .mini-cal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .mini-cal-header h4 { font-size:1rem; color:var(--green-deep); }
+    .mini-cal-nav { display:flex; gap:8px; }
+    .mini-cal-nav button { width:28px; height:28px; border:1px solid var(--border); background:var(--white); border-radius:4px; cursor:pointer; font-size:0.9rem; color:var(--text-mid); transition:all var(--transition); }
+    .mini-cal-nav button:hover { background:var(--green-deep); color:var(--white); border-color:var(--green-deep); }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+    .cal-day-header { text-align:center; font-size:0.7rem; font-weight:600; color:var(--text-light); padding:4px 0; text-transform:uppercase; }
+    .cal-day { text-align:center; padding:6px 2px; font-size:0.82rem; color:var(--text-mid); border-radius:4px; }
+    .cal-day.today { background:var(--green-deep); color:var(--white); font-weight:700; }
+    .cal-day.has-event { background:var(--stone-light); color:var(--green-deep); font-weight:600; cursor:pointer; }
+    .cal-day.has-event:hover { background:var(--green-light); color:var(--white); }
+    .cal-day.empty { color:transparent; }
+    .cal-legend { margin-top:16px; font-size:0.78rem; color:var(--text-light); }
+    .cal-legend span { display:inline-block; width:10px; height:10px; border-radius:2px; background:var(--stone-light); margin-right:4px; vertical-align:middle; }
+
+    /* ===================================================
+       DIRECTORY
+       =================================================== */
+    #directory { background:var(--stone-light); }
+    .directory-layout { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+    .directory-listing { background:var(--white); border-radius:12px; padding:24px; box-shadow:0 4px 16px var(--shadow); }
+    .directory-listing h3 { font-size:1.2rem; color:var(--green-deep); margin-bottom:16px; }
+    .directory-entry { display:flex; gap:14px; align-items:flex-start; padding:14px 0; border-bottom:1px solid var(--border); }
+    .directory-entry:last-child { border-bottom:none; }
+    .dir-avatar { width:44px; height:44px; border-radius:50%; background:var(--green-mid); color:var(--white); display:flex; align-items:center; justify-content:center; font-family:var(--font-serif); font-size:1.1rem; font-weight:700; flex-shrink:0; }
+    .dir-info h4 { font-size:0.95rem; color:var(--text-dark); margin-bottom:2px; }
+    .dir-info p { font-size:0.82rem; color:var(--text-light); }
+    .dir-info .dir-street { font-size:0.8rem; color:var(--green-mid); font-weight:500; }
+    .registered-entry { display:flex; gap:14px; align-items:flex-start; padding:12px; background:var(--stone-light); border-radius:8px; margin-bottom:8px; }
+    .reg-avatar { width:38px; height:38px; border-radius:50%; background:var(--blue-lake); color:var(--white); display:flex; align-items:center; justify-content:center; font-family:var(--font-serif); font-size:1rem; font-weight:700; flex-shrink:0; }
+    .reg-info h4 { font-size:0.88rem; color:var(--text-dark); margin-bottom:2px; }
+    .reg-info p { font-size:0.78rem; color:var(--text-light); }
+
+    /* ===================================================
+       CONTACT
+       =================================================== */
+    #contact { background:var(--white); }
+    .contact-layout { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+    .board-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+    .board-card { background:var(--stone-light); border-radius:10px; padding:16px; border-top:3px solid var(--green-mid); }
+    .board-card h4 { font-size:0.95rem; color:var(--green-deep); margin-bottom:2px; }
+    .board-card .board-role { font-size:0.78rem; color:var(--text-light); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
+    .board-card p { font-size:0.82rem; color:var(--text-mid); }
+    .meeting-schedule { background:var(--green-deep); color:var(--white); border-radius:10px; padding:20px; margin-top:16px; }
+    .meeting-schedule h4 { font-size:1rem; margin-bottom:12px; }
+    .meeting-schedule ul { display:flex; flex-direction:column; gap:8px; }
+    .meeting-schedule li { font-size:0.86rem; opacity:0.9; display:flex; align-items:center; gap:8px; }
+    .meeting-schedule li::before { content:'●'; color:var(--stone); font-size:0.5rem; }
+
+    /* ===================================================
+       FORMS
+       =================================================== */
+    .form-card { background:var(--white); border-radius:12px; padding:32px; box-shadow:0 4px 20px var(--shadow); border:1px solid var(--border); }
+    .form-card h3 { font-size:1.3rem; color:var(--green-deep); margin-bottom:6px; }
+    .form-card .form-desc { font-size:0.88rem; color:var(--text-light); margin-bottom:24px; }
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; font-size:0.82rem; font-weight:600; color:var(--text-mid); margin-bottom:6px; letter-spacing:0.03em; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:var(--radius); font-family:var(--font-sans); font-size:0.9rem; color:var(--text-dark); background:var(--white); transition:border-color var(--transition),box-shadow var(--transition); outline:none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--green-mid); box-shadow:0 0 0 3px rgba(74,124,89,0.12); }
+    .form-group input.error, .form-group select.error, .form-group textarea.error { border-color:#c0392b; }
+    .form-group .error-msg { font-size:0.78rem; color:#c0392b; margin-top:4px; display:none; }
+    .form-group .error-msg.show { display:block; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-success { display:none; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:var(--radius); padding:16px; color:#2e7d32; font-size:0.9rem; margin-top:16px; align-items:center; gap:10px; }
+    .form-success.show { display:flex; }
+    .form-success svg { width:20px; height:20px; flex-shrink:0; }
+
+    /* ===================================================
+       FOOTER
+       =================================================== */
+    footer { background:var(--green-deep); color:rgba(250,250,248,0.85); padding:56px 0 0; }
+    .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; padding-bottom:40px; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .footer-brand-name { font-family:var(--font-serif); font-size:1.4rem; color:var(--white); margin-bottom:8px; }
+    .footer-brand-sub { font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--stone); margin-bottom:16px; }
+    .footer-desc { font-size:0.86rem; line-height:1.7; opacity:0.8; max-width:280px; }
+    .footer-col h4 { font-size:0.8rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--stone); margin-bottom:16px; font-family:var(--font-sans); }
+    .footer-col ul { display:flex; flex-direction:column; gap:8px; }
+    .footer-col li a { font-size:0.86rem; opacity:0.8; transition:opacity var(--transition); }
+    .footer-col li a:hover { opacity:1; color:var(--stone); }
+    .footer-bottom { padding:20px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; opacity:0.65; flex-wrap:wrap; gap:8px; }
+    .footer-powered { display:flex; align-items:center; gap:6px; }
+    .footer-powered a { color:var(--stone); font-weight:600; opacity:1; }
+
+    /* ===================================================
+       ANIMATIONS
+       =================================================== */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes bounce { 0%,100% { transform:translateX(-50%) translateY(0); } 50% { transform:translateX(-50%) translateY(8px); } }
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity 0.6s ease,transform 0.6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* ===================================================
+       RESPONSIVE
+       =================================================== */
+    @media (max-width:1024px) {
+      .about-grid { grid-template-columns:1fr; gap:40px; }
+      .about-img-badge { right:0; bottom:-16px; }
+      .amenities-grid { grid-template-columns:1fr 1fr; }
+      .homes-grid { grid-template-columns:1fr 1fr; }
+      .news-grid { grid-template-columns:1fr 1fr; }
+      .map-layout { grid-template-columns:1fr; }
+      .events-layout { grid-template-columns:1fr; }
+      .footer-grid { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:768px) {
+      :root { --nav-h:60px; }
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+      .section { padding:56px 0; }
+      .quick-links-inner { grid-template-columns:1fr 1fr; }
+      .amenities-grid { grid-template-columns:1fr; }
+      .homes-grid { grid-template-columns:1fr; }
+      .news-grid { grid-template-columns:1fr; }
+      .luminaries-layout { grid-template-columns:1fr; }
+      .directory-layout { grid-template-columns:1fr; }
+      .contact-layout { grid-template-columns:1fr; }
+      .board-grid { grid-template-columns:1fr; }
+      .about-features { grid-template-columns:1fr; }
+      .form-row { grid-template-columns:1fr; }
+      .footer-grid { grid-template-columns:1fr; }
+      .footer-bottom { flex-direction:column; text-align:center; }
+      .luminaries-hero img { height:280px; }
+      .luminaries-hero-overlay { padding:24px; }
+      .photo-strip { grid-template-columns:1fr 1fr; }
+      #neighborhood-map { height:320px; }
+      .lum-photo-grid { grid-template-columns:1fr; }
+      .lum-photo-grid img:first-child { aspect-ratio:16/9; }
+    }
+    @media (max-width:480px) {
+      .quick-links-inner { grid-template-columns:1fr 1fr; }
+      .hero-actions { flex-direction:column; }
+      .hero-actions .btn { text-align:center; }
+      .photo-strip { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#home" class="nav-brand" aria-label="Lake Jewel Hills HOA Home">
+        <span class="nav-brand-name">Lake Jewel Hills</span>
+        <span class="nav-brand-sub">Neighborhood Association</span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="#home" class="active">Home</a>
+        <a href="#about">About</a>
+        <a href="#amenities">Amenities</a>
+        <a href="#map-section">Map</a>
+        <a href="#news">News</a>
+        <a href="#luminaries">Luminaries</a>
+        <a href="#homes">Homes</a>
+        <a href="#events">Events</a>
+        <a href="#directory">Directory</a>
+        <a href="#blog">Blog</a>
+        <a href="#contact" class="nav-cta">Contact</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="#home" onclick="closeMobileNav()">Home</a>
+    <a href="#about" onclick="closeMobileNav()">About the Neighborhood</a>
+    <a href="#amenities" onclick="closeMobileNav()">Community Amenities</a>
+    <a href="#map-section" onclick="closeMobileNav()">Neighborhood Map</a>
+    <a href="#news" onclick="closeMobileNav()">News &amp; Announcements</a>
+    <a href="#luminaries" onclick="closeMobileNav()">Holiday Luminaries</a>
+    <a href="#homes" onclick="closeMobileNav()">Homes for Sale</a>
+    <a href="#events" onclick="closeMobileNav()">Events Calendar</a>
+    <a href="#directory" onclick="closeMobileNav()">Neighbor Directory</a>
+    <a href="#blog" onclick="closeMobileNav()">Blog</a>
+    <a href="#contact" onclick="closeMobileNav()">Contact / Board</a>
+  </div>
+
+  <!-- =====================================================
+       HERO — uses real luminary street photo
+       ===================================================== -->
+  <section id="home" class="page-section" aria-label="Hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-eyebrow">Orlando, Florida · Est. 1960s · Zip 32806</p>
+        <h1 class="hero-title">
+          A Neighborhood<br>With <em>Character</em>
+        </h1>
+        <p class="hero-desc">
+          Lake Jewel Hills is a small, established residential community in the heart of Orlando — known for its mature trees, winding streets, distinctive mid-century homes, and a strong sense of neighborhood pride.
+        </p>
+        <div class="hero-actions">
+          <a href="#about" class="btn btn-primary">About Our Neighborhood</a>
+          <a href="#homes" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.7);">View Homes for Sale</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll" onclick="document.getElementById('quick-links').scrollIntoView({behavior:'smooth'})">
+      <span>Explore</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </div>
+  </section>
+
+  <!-- Quick Links Bar -->
+  <div id="quick-links" class="quick-links">
+    <div class="quick-links-inner">
+      <a href="#news" class="quick-link-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z"/><path d="M17 20v-8H7v8M7 4v4h8"/></svg>
+        <span>News &amp; Updates</span>
+      </a>
+      <a href="#luminaries" class="quick-link-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01L12 2z"/></svg>
+        <span>Holiday Luminaries</span>
+      </a>
+      <a href="#events" class="quick-link-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span>Events Calendar</span>
+      </a>
+      <a href="#directory" class="quick-link-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Neighbor Directory</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       ABOUT
+       ===================================================== -->
+  <section id="about" class="section page-section">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-img-wrap reveal">
+          <img src="photos/entrance-day.jpeg" alt="Lake Jewel Hills neighborhood entrance sign" loading="lazy" />
+          <div class="about-img-badge">
+            <strong>1960s</strong>
+            <span>Est. Community</span>
+          </div>
+        </div>
+        <div class="reveal">
+          <p class="tag tag-green">About the Neighborhood</p>
+          <h2 class="section-title" style="margin-top:12px">A Distinctive Orlando Neighborhood</h2>
+          <div class="divider"></div>
+          <p style="color:var(--text-mid);margin-bottom:16px;font-size:0.95rem;line-height:1.8;">
+            Lake Jewel Hills is a small, established residential community located in Orlando's 32806 zip code. The neighborhood was developed in the 1960s and is platted as Plat Book Z, Page 33 in Orange County records. Its four streets — <strong>Claire Street</strong>, <strong>Jennie Jewel Drive</strong>, <strong>Osceola Avenue</strong>, and <strong>Brent Street</strong> — are lined with mature trees and well-maintained homes that reflect the character of the era.
+          </p>
+          <p style="color:var(--text-mid);margin-bottom:16px;font-size:0.95rem;line-height:1.8;">
+            What sets Lake Jewel Hills apart is its varied terrain. Unlike most of Central Florida, the neighborhood features man-made hills and changes in elevation that give the streets a more rolling, wooded feel. Many homes are split-level or multi-story, and some include lower-level living spaces that take advantage of the grade changes — an unusual feature for Florida construction.
+          </p>
+          <p style="color:var(--text-mid);margin-bottom:28px;font-size:0.95rem;line-height:1.8;">
+            The neighborhood sits near Lake Jewel, and a number of homes along Osceola Avenue have views of or proximity to the lake. It is a quiet, established community with long-term residents and a genuine sense of pride in the neighborhood.
+          </p>
+          <div class="about-features">
+            <div class="about-feature">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l4-8 4 4 4-6 4 10"/></svg>
+              <div><strong>Varied Terrain</strong><p>Man-made hills and elevation changes uncommon in Central Florida</p></div>
+            </div>
+            <div class="about-feature">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <div><strong>Split-Level Homes</strong><p>1960s construction with multi-level layouts and lower-level spaces</p></div>
+            </div>
+            <div class="about-feature">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+              <div><strong>Near Lake Jewel</strong><p>Some homes have views or proximity to the lake</p></div>
+            </div>
+            <div class="about-feature">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <div><strong>HOA</strong><p>Homeowners association serving Lake Jewel Hills residents</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real photo strip -->
+      <div class="photo-strip reveal" style="margin-top:56px;">
+        <div class="photo-strip-item">
+          <img src="photos/sign-classic.jpeg" alt="Lake Jewell Hills classic neighborhood sign on brick wall" loading="lazy" />
+        </div>
+        <div class="photo-strip-item">
+          <img src="photos/entrance-day.jpeg" alt="Lake Jewel Hills entrance with landscaping" loading="lazy" />
+        </div>
+        <div class="photo-strip-item">
+          <img src="photos/luminaries-redgreen.jpeg" alt="Lake Jewel Hills entrance decorated for the holidays" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       AMENITIES — icon-based, no stock photos
+       ===================================================== -->
+  <section id="amenities" class="section page-section">
+    <div class="container">
+      <p class="tag tag-blue">Community Amenities</p>
+      <h2 class="section-title" style="margin-top:12px">Living in Lake Jewel Hills</h2>
+      <div class="divider"></div>
+      <p class="section-subtitle">A well-located, established neighborhood with convenient access to parks, schools, and everything Orlando has to offer.</p>
+
+      <div class="amenities-grid" style="grid-template-columns:1fr 1fr;max-width:760px;">
+        <div class="amenity-card reveal">
+          <div class="amenity-icon-wrap" style="background:#5a7a5a;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div class="amenity-body">
+            <h3>Top-Rated Schools</h3>
+            <p>The neighborhood is zoned for Blankner K-8 and Boone High School, both well-regarded in Orange County Public Schools. Several private school options are also nearby.</p>
+          </div>
+        </div>
+        <div class="amenity-card reveal">
+          <div class="amenity-icon-wrap" style="background:#6a7a4a;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="amenity-body">
+            <h3>Central Location</h3>
+            <p>Conveniently located near downtown Orlando, the SoDo District, and major roadways. Shopping, dining, and entertainment are all within a short drive.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       MAP
+       ===================================================== -->
+  <section id="map-section" class="section page-section">
+    <div class="container">
+      <p class="tag tag-stone">Neighborhood Map</p>
+      <h2 class="section-title" style="margin-top:12px">Find Your Way Around</h2>
+      <div class="divider"></div>
+      <div class="map-layout">
+        <div id="neighborhood-map" aria-label="Interactive map of Lake Jewel Hills neighborhood"></div>
+        <div class="map-sidebar reveal">
+          <h3>Lake Jewel Hills Streets</h3>
+          <p>The neighborhood comprises four streets within the Lake Jewel Hills subdivision (Plat Z/33, Orange County, FL 32806).</p>
+          <div class="street-list">
+            <div class="street-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+              Claire Street
+            </div>
+            <div class="street-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+              Jennie Jewel Drive
+            </div>
+            <div class="street-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+              Osceola Avenue (S)
+            </div>
+            <div class="street-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+              Brent Street
+            </div>
+          </div>
+          <div class="map-stats">
+            <div class="map-stat"><strong>32806</strong><span>Zip Code</span></div>
+            <div class="map-stat"><strong>4</strong><span>Streets</span></div>
+            <div class="map-stat"><strong>~7 ac</strong><span>Lake Jewel</span></div>
+            <div class="map-stat"><strong>1960s</strong><span>Built</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       NEWS
+       ===================================================== -->
+  <section id="news" class="section page-section">
+    <div class="container">
+      <p class="tag tag-green">News &amp; Announcements</p>
+      <h2 class="section-title" style="margin-top:12px">Community Updates</h2>
+      <div class="divider"></div>
+      <p class="section-subtitle">Stay informed about what's happening in Lake Jewel Hills. Check back for neighborhood news, upcoming events, and announcements.</p>
+
+      <div class="news-grid">
+        <div class="news-card reveal">
+          <div class="news-card-body">
+            <div class="news-meta"><span class="tag tag-green">Event</span><span class="news-date">December 14, 2025</span></div>
+            <h3>Annual Holiday Luminary Night — Save the Date!</h3>
+            <p>Our neighborhood tradition returns in 2026. Luminaries will line every street in Lake Jewel Hills. Volunteers needed to help set up and clean up. Date TBD.</p>
+            <a href="#luminaries" class="news-read-more">Sign Up to Volunteer →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       LUMINARIES — real photos
+       ===================================================== -->
+  <section id="luminaries" class="section page-section">
+    <div class="container">
+
+      <!-- Hero photo: luminary entrance night shot -->
+      <div class="luminaries-hero reveal">
+        <img src="photos/luminaries-entrance.jpeg" alt="Lake Jewel Hills entrance decorated with luminaries and holiday lights at night" />
+        <div class="luminaries-hero-overlay">
+          <p class="tag tag-stone" style="margin-bottom:16px;align-self:flex-start;">Annual Tradition</p>
+          <h2>Holiday Luminary Night</h2>
+          <p>Each year, luminaries line every street in Lake Jewel Hills — a beloved neighborhood tradition that brings the whole community together. The 2026 date will be announced soon.</p>
+          <div class="lum-stats">
+            <div class="lum-stat"><strong>TBD</strong><span>Event Date 2026</span></div>
+            <div class="lum-stat"><strong>6:00 PM</strong><span>Lighting Time</span></div>
+            <div class="lum-stat"><strong>500+</strong><span>Luminaries</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="luminaries-layout">
+        <div class="luminaries-info reveal">
+          <h3>About the Event</h3>
+          <p>The Lake Jewel Hills Holiday Luminary Night is one of the neighborhood's most cherished traditions. Each year, luminaries are placed along Claire Street, Jennie Jewel Drive, Osceola Avenue, and Brent Street, creating a warm glow that draws residents out for an evening walk and brings the community together.</p>
+          <p>The event is entirely volunteer-run. Whether you can help set up bags in the afternoon, assist with lighting, or clean up afterward, every hand makes a difference.</p>
+          <div class="lum-detail-list">
+            <div class="lum-detail-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span><strong>Date:</strong>&nbsp; TBD — 2026 (date to be announced)</span>
+            </div>
+            <div class="lum-detail-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span><strong>Time:</strong>&nbsp; To be announced</span>
+            </div>
+            <div class="lum-detail-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span><strong>Location:</strong>&nbsp; Throughout Lake Jewel Hills</span>
+            </div>
+            <div class="lum-detail-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <span><strong>Volunteers needed:</strong>&nbsp; 20–30 helpers</span>
+            </div>
+          </div>
+
+          <!-- Real luminary photo grid -->
+          <div class="lum-photo-grid">
+            <img src="photos/luminaries-street.jpeg" alt="Luminaries lining the winding street in Lake Jewel Hills" loading="lazy" />
+            <img src="photos/luminaries-wide.jpeg" alt="Wide view of luminaries lining the street at night" loading="lazy" />
+            <img src="photos/luminaries-redgreen.jpeg" alt="Lake Jewel Hills entrance with red and green holiday lights and luminaries" loading="lazy" />
+          </div>
+        </div>
+
+        <!-- Sign-Up Form -->
+        <div class="form-card reveal">
+          <h3>Volunteer Sign-Up</h3>
+          <p class="form-desc">Sign up to help with this year's luminary event. All volunteers receive a complimentary hot cocoa kit!</p>
+          <form id="luminary-form" name="luminary-signup" method="POST" action="https://formspree.io/f/xpwzgkqv" novalidate>
+            <input type="hidden" name="_subject" value="New Luminary Volunteer Sign-Up — Lake Jewel Hills" />
+            <input type="hidden" name="_replyto" value="mike@oneoakteam.com" />
+            <div class="form-row">
+              <div class="form-group">
+                <label for="lum-fname">First Name *</label>
+                <input type="text" id="lum-fname" placeholder="Jane" />
+                <span class="error-msg" id="lum-fname-err">Please enter your first name.</span>
+              </div>
+              <div class="form-group">
+                <label for="lum-lname">Last Name *</label>
+                <input type="text" id="lum-lname" placeholder="Smith" />
+                <span class="error-msg" id="lum-lname-err">Please enter your last name.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="lum-address">Street Address *</label>
+              <input type="text" id="lum-address" placeholder="3215 Jennie Jewel Drive" />
+              <span class="error-msg" id="lum-address-err">Please enter your address.</span>
+            </div>
+            <div class="form-group">
+              <label for="lum-email">Email Address *</label>
+              <input type="email" id="lum-email" placeholder="jane@example.com" />
+              <span class="error-msg" id="lum-email-err">Please enter a valid email address.</span>
+            </div>
+            <div class="form-group">
+              <label for="lum-phone">Phone Number</label>
+              <input type="tel" id="lum-phone" placeholder="(407) 555-0100" />
+            </div>
+            <div class="form-group">
+              <label for="lum-role">How would you like to help? *</label>
+              <select id="lum-role">
+                <option value="">— Select a role —</option>
+                <option value="setup">Luminary Setup &amp; Placement (3–6 PM)</option>
+                <option value="traffic">Traffic &amp; Pedestrian Safety (5–9 PM)</option>
+                <option value="coordination">Neighbor Coordination</option>
+                <option value="supplies">Supply Pickup &amp; Distribution</option>
+                <option value="cleanup">Post-Event Cleanup (9–10 PM)</option>
+                <option value="multiple">Available for Multiple Roles</option>
+              </select>
+              <span class="error-msg" id="lum-role-err">Please select how you'd like to help.</span>
+            </div>
+            <div class="form-group">
+              <label for="lum-notes">Additional Notes</label>
+              <textarea id="lum-notes" rows="3" placeholder="Any questions or availability notes..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Submit Volunteer Sign-Up</button>
+            <div class="form-success" id="lum-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Thank you! We'll be in touch with details closer to December 14th.</span>
+            </div>
+          </form>
+          <div id="lum-signups-wrap" style="margin-top:24px;display:none;">
+            <h4 style="font-size:0.9rem;color:var(--green-deep);margin-bottom:12px;">Current Volunteers (this session)</h4>
+            <div id="lum-signups-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       HOMES FOR SALE
+       ===================================================== -->
+  <section id="homes" class="section page-section">
+    <div class="container">
+      <p class="tag tag-blue">Real Estate</p>
+      <h2 class="section-title" style="margin-top:12px">Homes for Sale in Lake Jewel Hills</h2>
+      <div class="divider"></div>
+      <p class="section-subtitle">Contact One Oak Realty Corp for current listings, showings, and market information specific to Lake Jewel Hills.</p>
+
+      <div style="background:var(--white);border-radius:12px;padding:40px;box-shadow:0 4px 20px var(--shadow);border:1px solid var(--border);text-align:center;max-width:680px;margin:0 auto;" class="reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--green-mid);margin:0 auto 16px;"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <h3 style="font-family:var(--font-serif);font-size:1.4rem;color:var(--green-deep);margin-bottom:12px;">Interested in a Home in Lake Jewel Hills?</h3>
+        <p style="color:var(--text-mid);font-size:0.95rem;margin-bottom:8px;">Lake Jewel Hills is a small, tightly-held neighborhood. Homes don't come on the market often, but when they do they move quickly.</p>
+        <p style="color:var(--text-mid);font-size:0.95rem;margin-bottom:28px;">Contact One Oak Realty Corp to be notified when a home becomes available, or to discuss selling your home.</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+          <a href="https://www.OneOakRealtyCorp.com" target="_blank" rel="noopener" class="btn btn-primary">View Homes for Sale</a>
+          <a href="https://www.OneOakRealtyCorp.com" target="_blank" rel="noopener" class="btn btn-outline">Visit One Oak Realty Corp</a>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- =====================================================
+       EVENTS
+       ===================================================== -->
+  <section id="events" class="section page-section">
+    <div class="container">
+      <p class="tag tag-green">Events Calendar</p>
+      <h2 class="section-title" style="margin-top:12px">Upcoming Community Events</h2>
+      <div class="divider"></div>
+      <div class="events-layout">
+        <div class="event-list">
+          <div style="padding:40px 32px;background:var(--stone-light);border-radius:10px;border-left:4px solid var(--green-mid);text-align:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;color:var(--green-mid);margin:0 auto 16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <h3 style="font-family:var(--font-serif);font-size:1.2rem;color:var(--green-deep);margin-bottom:10px;">Events Coming Soon</h3>
+            <p style="font-size:0.92rem;color:var(--text-mid);max-width:420px;margin:0 auto;">The 2026 community events calendar is being finalized by the HOA board. Check back here for updates, or contact the board to be added to the neighborhood email list.</p>
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="mini-calendar">
+            <div class="mini-cal-header">
+              <h4 id="cal-month-label">December 2025</h4>
+              <div class="mini-cal-nav">
+                <button onclick="changeCalMonth(-1)" aria-label="Previous month">‹</button>
+                <button onclick="changeCalMonth(1)" aria-label="Next month">›</button>
+              </div>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+            <p class="cal-legend"><span></span> Event day</p>
+          </div>
+          <div style="margin-top:20px;padding:20px;background:var(--stone-light);border-radius:10px;">
+            <h4 style="font-size:0.95rem;color:var(--green-deep);margin-bottom:8px;">Stay in the Loop</h4>
+            <p style="font-size:0.84rem;color:var(--text-mid);margin-bottom:12px;">Contact the HOA board to be added to the neighborhood email list for event reminders and announcements.</p>
+            <a href="#contact" class="btn btn-outline" style="font-size:0.82rem;padding:8px 18px;">Contact the Board</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       DIRECTORY — Admin only
+       ===================================================== -->
+  <section id="directory" class="section page-section">
+    <div class="container">
+
+      <!-- Admin Login Gate -->
+      <div id="dir-login-gate">
+        <p class="tag tag-stone">Admin Access</p>
+        <h2 class="section-title" style="margin-top:12px">Household Registration</h2>
+        <div class="divider"></div>
+        <p class="section-subtitle">This section is restricted to HOA administrators.</p>
+        <div class="form-card reveal" style="max-width:420px;">
+          <h3>Admin Login</h3>
+          <p class="form-desc">Enter your credentials to access the household registration form.</p>
+          <div class="form-group">
+            <label for="admin-user">Username</label>
+            <input type="text" id="admin-user" placeholder="Username" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="admin-pass">Password</label>
+            <input type="password" id="admin-pass" placeholder="Password" autocomplete="off" />
+          </div>
+          <div id="admin-login-err" style="color:#c0392b;font-size:0.84rem;margin-bottom:12px;display:none;">Incorrect username or password.</div>
+          <button type="button" onclick="checkAdminLogin()" class="btn btn-primary" style="width:100%">Log In</button>
+        </div>
+      </div>
+
+      <!-- Registration Form (hidden until logged in) -->
+      <div id="dir-admin-content" style="display:none;">
+      <p class="tag tag-stone">Admin — Household Registration</p>
+      <h2 class="section-title" style="margin-top:12px">Register Your Household</h2>
+      <div class="divider"></div>
+      <p class="section-subtitle">Add or update resident household information. Submissions are emailed to the HOA administrator.</p>
+      <div class="directory-layout">
+        <div class="form-card reveal">
+          <h3>Household Registration</h3>
+          <p class="form-desc">Register or update your household information. Your details are shared only with the HOA board.</p>
+          <form id="directory-form" name="household-registration" method="POST" action="https://formspree.io/f/xpwzgkqv" novalidate>
+            <input type="hidden" name="_subject" value="New Household Registration — Lake Jewel Hills" />
+            <input type="hidden" name="_replyto" value="mike@oneoakteam.com" />
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dir-fname">First Name *</label>
+                <input type="text" id="dir-fname" placeholder="John" />
+                <span class="error-msg" id="dir-fname-err">Please enter your first name.</span>
+              </div>
+              <div class="form-group">
+                <label for="dir-lname">Last Name *</label>
+                <input type="text" id="dir-lname" placeholder="Doe" />
+                <span class="error-msg" id="dir-lname-err">Please enter your last name.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dir-address">Street Address *</label>
+              <input type="text" id="dir-address" placeholder="3215 Jennie Jewel Drive" />
+              <span class="error-msg" id="dir-address-err">Please enter your street address.</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dir-phone">Phone Number *</label>
+                <input type="tel" id="dir-phone" placeholder="(407) 555-0100" />
+                <span class="error-msg" id="dir-phone-err">Please enter your phone number.</span>
+              </div>
+              <div class="form-group">
+                <label for="dir-email">Email Address *</label>
+                <input type="email" id="dir-email" placeholder="john@example.com" />
+                <span class="error-msg" id="dir-email-err">Please enter a valid email.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dir-years">Years in Neighborhood</label>
+              <select id="dir-years">
+                <option value="">— Select —</option>
+                <option>Less than 1 year</option>
+                <option>1–3 years</option>
+                <option>4–10 years</option>
+                <option>11–20 years</option>
+                <option>20+ years</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dir-notes">Optional Notes</label>
+              <textarea id="dir-notes" rows="3" placeholder="Anything you'd like neighbors to know..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Register Household</button>
+            <div class="form-success" id="dir-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Welcome to the directory! Your registration has been saved.</span>
+            </div>
+          </form>
+        </div>
+      </div><!-- end directory-layout -->
+      </div><!-- end dir-admin-content -->
+    </div>
+  </section>
+
+  <!-- =====================================================
+       CONTACT / BOARD
+       ===================================================== -->
+  <section id="contact" class="section page-section">
+    <div class="container">
+      <p class="tag tag-green">Contact &amp; Board</p>
+      <h2 class="section-title" style="margin-top:12px">Your HOA Board &amp; Contact</h2>
+      <div class="divider"></div>
+      <div class="contact-layout">
+        <div class="reveal">
+          <h3 style="font-size:1.3rem;color:var(--green-deep);margin-bottom:16px;">Board Members</h3>
+          <div class="board-grid">
+            <div class="board-card"><p class="board-role">President</p><p style="color:var(--text-light);font-size:0.82rem;">To be announced</p></div>
+            <div class="board-card"><p class="board-role">Vice President</p><p style="color:var(--text-light);font-size:0.82rem;">To be announced</p></div>
+            <div class="board-card"><p class="board-role">Treasurer</p><p style="color:var(--text-light);font-size:0.82rem;">To be announced</p></div>
+            <div class="board-card"><p class="board-role">Secretary</p><p style="color:var(--text-light);font-size:0.82rem;">To be announced</p></div>
+            <div class="board-card"><p class="board-role">At-Large Member</p><p style="color:var(--text-light);font-size:0.82rem;">To be announced</p></div>
+            <div class="board-card"><p class="board-role">At-Large Member</p><p style="color:var(--text-light);font-size:0.82rem;">To be announced</p></div>
+          </div>
+          <div class="meeting-schedule">
+            <h4>Board Meeting Schedule</h4>
+            <ul>
+              <li>Regular meetings: 2nd Tuesday of each month, 7:00 PM</li>
+              <li>Location: Delaney Park Pavilion, Orlando</li>
+              <li>Annual Meeting: November (all residents welcome)</li>
+              <li>Emergency meetings: Announced via email list</li>
+            </ul>
+          </div>
+        </div>
+        <div class="form-card reveal">
+          <h3>Send a Message</h3>
+          <p class="form-desc">Reach out to the HOA board or One Oak Realty Corp with questions, concerns, or real estate inquiries.</p>
+          <form id="contact-form" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="con-name">Full Name *</label>
+                <input type="text" id="con-name" placeholder="Your Name" />
+                <span class="error-msg" id="con-name-err">Please enter your name.</span>
+              </div>
+              <div class="form-group">
+                <label for="con-email">Email Address *</label>
+                <input type="email" id="con-email" placeholder="you@example.com" />
+                <span class="error-msg" id="con-email-err">Please enter a valid email.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="con-phone">Phone Number</label>
+              <input type="tel" id="con-phone" placeholder="(407) 555-0100" />
+            </div>
+            <div class="form-group">
+              <label for="con-subject">Subject *</label>
+              <select id="con-subject">
+                <option value="">— Select a topic —</option>
+                <option>General HOA Inquiry</option>
+                <option>Real Estate — Buying</option>
+                <option>Real Estate — Selling</option>
+                <option>Holiday Luminaries</option>
+                <option>Community Events</option>
+                <option>Neighbor Concern</option>
+                <option>Board Membership Interest</option>
+                <option>Other</option>
+              </select>
+              <span class="error-msg" id="con-subject-err">Please select a subject.</span>
+            </div>
+            <div class="form-group">
+              <label for="con-message">Message *</label>
+              <textarea id="con-message" rows="5" placeholder="How can we help you?"></textarea>
+              <span class="error-msg" id="con-message-err">Please enter your message.</span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Send Message</button>
+            <div class="form-success" id="con-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Your message has been received. We'll respond within 48 hours.</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       BLOG
+       ===================================================== -->
+  <section id="blog" class="section page-section" style="background:var(--stone-light);">
+    <div class="container">
+      <p class="tag tag-green">Neighborhood Blog</p>
+      <h2 class="section-title" style="margin-top:12px">From the HOA</h2>
+      <div class="divider"></div>
+      <p class="section-subtitle">News, updates, and announcements from the Lake Jewel Hills Homeowners Association.</p>
+
+      <div id="blog-posts-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+        <!-- Blog posts are loaded dynamically from markdown files -->
+        <div class="news-card reveal">
+          <div class="news-card-body">
+            <div class="news-meta"><span class="tag tag-green">HOA</span><span class="news-date">January 1, 2026</span></div>
+            <h3>Welcome to the Lake Jewel Hills Blog</h3>
+            <p>Welcome to the official blog of the Lake Jewel Hills Homeowners Association. Check back here for neighborhood news, updates, event recaps, and announcements.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:40px;">
+        <p style="font-size:0.88rem;color:var(--text-light);">More posts coming soon. <a href="#contact" style="color:var(--green-mid);font-weight:600;">Contact the board</a> to submit a story or announcement.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-brand-name">Lake Jewel Hills</p>
+          <p class="footer-brand-sub">Neighborhood Association · Orlando, FL</p>
+          <p class="footer-desc">Lake Jewel Hills Homeowners Association — serving the residents of an established, distinctive neighborhood in the heart of Orlando, Florida.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#amenities">Amenities</a></li>
+            <li><a href="#map-section">Neighborhood Map</a></li>
+            <li><a href="#news">News</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#luminaries">Holiday Luminaries</a></li>
+            <li><a href="#homes">Homes for Sale</a></li>
+            <li><a href="#events">Events Calendar</a></li>
+            <li><a href="#directory">Neighbor Directory</a></li>
+            <li><a href="#blog">Blog</a></li>
+            <li><a href="#contact">Contact / Board</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="#contact">HOA Board</a></li>
+            <li><a href="#contact">One Oak Realty Corp</a></li>
+            <li><a href="#contact">General Inquiries</a></li>
+            <li><a href="#contact">Real Estate</a></li>
+            <li><a href="#luminaries">Volunteer</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Lake Jewel Hills Neighborhood Association. All rights reserved.</span>
+        <div class="footer-powered">
+          <span>Powered by</span>
+          <a href="#contact">One Oak Realty Corp</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Netlify Identity Widget -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    /* --- ADMIN LOGIN --- */
+    function checkAdminLogin() {
+      const u = document.getElementById('admin-user').value.trim();
+      const p = document.getElementById('admin-pass').value;
+      if (u === 'mchiorando' && p === 'Unicorns-Have-Gas2') {
+        document.getElementById('dir-login-gate').style.display = 'none';
+        document.getElementById('dir-admin-content').style.display = 'block';
+      } else {
+        document.getElementById('admin-login-err').style.display = 'block';
+      }
+    }
+    // Allow Enter key to submit admin login
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && document.activeElement &&
+          (document.activeElement.id === 'admin-user' || document.activeElement.id === 'admin-pass')) {
+        checkAdminLogin();
+      }
+    });
+
+    /* --- NAV --- */
+    const navbar    = document.getElementById('navbar');
+    const hamburger = document.getElementById('hamburger');
+    const navMobile = document.getElementById('nav-mobile');
+    const sections  = document.querySelectorAll('.page-section');
+
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+      updateActiveNav();
+    });
+    hamburger.addEventListener('click', () => {
+      const open = navMobile.classList.toggle('open');
+      hamburger.classList.toggle('open', open);
+      hamburger.setAttribute('aria-expanded', open);
+    });
+    function closeMobileNav() {
+      navMobile.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', false);
+    }
+    function updateActiveNav() {
+      let current = '';
+      sections.forEach(sec => { if (window.scrollY >= sec.offsetTop - 100) current = sec.id; });
+      document.querySelectorAll('#nav-links a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+      });
+    }
+
+    /* --- SCROLL REVEAL --- */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    /* --- LEAFLET MAP --- */
+    const map = L.map('neighborhood-map', { center:[28.5028,-81.3677], zoom:17, scrollWheelZoom:false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom:19
+    }).addTo(map);
+    const lakeIcon = L.divIcon({ className:'', html:`<div style="width:36px;height:36px;background:#2d4a2d;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`, iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36] });
+    L.marker([28.5028,-81.3677],{icon:lakeIcon}).addTo(map).bindPopup(`<strong style="font-family:Georgia,serif;color:#2d4a2d;">Lake Jewel Hills</strong><br><span style="font-size:12px;color:#666;">Orlando, FL 32806</span><br><span style="font-size:12px;">Claire St · Jennie Jewel Dr · Osceola Ave · Brent St</span>`).openPopup();
+    const streetIcon = L.divIcon({ className:'', html:`<div style="width:10px;height:10px;background:#5b8fa8;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`, iconSize:[10,10], iconAnchor:[5,5] });
+    [{name:'Claire Street',lat:28.5031,lng:-81.3677},{name:'Jennie Jewel Drive',lat:28.5022,lng:-81.3690},{name:'Brent Street',lat:28.5020,lng:-81.3663}].forEach(s => {
+      L.marker([s.lat,s.lng],{icon:streetIcon}).addTo(map).bindPopup(`<strong style="font-size:13px;">${s.name}</strong><br><span style="font-size:11px;color:#666;">Lake Jewel Hills, Orlando FL</span>`);
+    });
+    L.polygon([[28.5042,-81.3700],[28.5042,-81.3655],[28.5010,-81.3655],[28.5010,-81.3700]],{color:'#2d4a2d',fillColor:'#4a7c59',fillOpacity:0.08,weight:2,dashArray:'6 4'}).addTo(map);
+
+    /* --- MINI CALENDAR --- */
+    const eventDays = { 8:[20], 9:[31], 10:[8,22], 11:[14] };
+    let calYear=2025, calMonth=11;
+    const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function renderCalendar() {
+      document.getElementById('cal-month-label').textContent=`${monthNames[calMonth]} ${calYear}`;
+      const grid=document.getElementById('cal-grid'); grid.innerHTML='';
+      ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{ const el=document.createElement('div'); el.className='cal-day-header'; el.textContent=d; grid.appendChild(el); });
+      const firstDay=new Date(calYear,calMonth,1).getDay(), daysInMonth=new Date(calYear,calMonth+1,0).getDate(), today=new Date(), events=eventDays[calMonth]||[];
+      for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='cal-day empty';el.textContent='.';grid.appendChild(el);}
+      for(let d=1;d<=daysInMonth;d++){const el=document.createElement('div');el.className='cal-day';el.textContent=d;if(d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear())el.classList.add('today');else if(events.includes(d)){el.classList.add('has-event');el.title='Community event';}grid.appendChild(el);}
+    }
+    function changeCalMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+    renderCalendar();
+
+    /* --- HOMES FILTER --- */
+    function filterHomes(status,btn){
+      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.home-card').forEach(card=>{ card.style.display=(status==='all'||card.dataset.status===status)?'':'none'; });
+    }
+
+    /* --- FORM HELPERS --- */
+    function isValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+    function setError(inputId,errId,show){
+      const input=document.getElementById(inputId),err=document.getElementById(errId);
+      if(show){input.classList.add('error');err.classList.add('show');}else{input.classList.remove('error');err.classList.remove('show');}
+      return !show;
+    }
+    function getVal(id){return document.getElementById(id).value.trim();}
+
+    /* --- LUMINARY FORM --- */
+    document.getElementById('luminary-form').addEventListener('submit',function(e){
+      e.preventDefault(); let valid=true;
+      valid=setError('lum-fname','lum-fname-err',!getVal('lum-fname'))&&valid;
+      valid=setError('lum-lname','lum-lname-err',!getVal('lum-lname'))&&valid;
+      valid=setError('lum-address','lum-address-err',!getVal('lum-address'))&&valid;
+      valid=setError('lum-email','lum-email-err',!isValidEmail(getVal('lum-email')))&&valid;
+      valid=setError('lum-role','lum-role-err',!getVal('lum-role'))&&valid;
+      if(!valid)return;
+      const entry={name:getVal('lum-fname')+' '+getVal('lum-lname'),address:getVal('lum-address'),email:getVal('lum-email'),phone:getVal('lum-phone'),role:document.getElementById('lum-role').options[document.getElementById('lum-role').selectedIndex].text,notes:getVal('lum-notes'),ts:new Date().toLocaleDateString()};
+      const existing=JSON.parse(localStorage.getItem('ljh_luminary_signups')||'[]');existing.push(entry);localStorage.setItem('ljh_luminary_signups',JSON.stringify(existing));
+      document.getElementById('lum-success').classList.add('show');this.reset();renderLuminarySignups();
+    });
+    function renderLuminarySignups(){
+      const data=JSON.parse(localStorage.getItem('ljh_luminary_signups')||'[]');
+      const wrap=document.getElementById('lum-signups-wrap'),list=document.getElementById('lum-signups-list');
+      if(!data.length){wrap.style.display='none';return;}
+      wrap.style.display='block';
+      list.innerHTML=data.map(e=>`<div style="padding:10px 12px;background:var(--stone-light);border-radius:6px;margin-bottom:8px;font-size:0.84rem;"><strong style="color:var(--green-deep);">${e.name}</strong><span style="color:var(--text-light);margin-left:8px;">${e.address}</span><br><span style="color:var(--text-mid);">Role: ${e.role}</span><span style="color:var(--text-light);float:right;">${e.ts}</span></div>`).join('');
+    }
+    renderLuminarySignups();
+
+    /* --- DIRECTORY FORM --- */
+    document.getElementById('directory-form').addEventListener('submit',function(e){
+      e.preventDefault(); let valid=true;
+      valid=setError('dir-fname','dir-fname-err',!getVal('dir-fname'))&&valid;
+      valid=setError('dir-lname','dir-lname-err',!getVal('dir-lname'))&&valid;
+      valid=setError('dir-address','dir-address-err',!getVal('dir-address'))&&valid;
+      valid=setError('dir-phone','dir-phone-err',!getVal('dir-phone'))&&valid;
+      valid=setError('dir-email','dir-email-err',!isValidEmail(getVal('dir-email')))&&valid;
+      if(!valid)return;
+      const entry={fname:getVal('dir-fname'),lname:getVal('dir-lname'),address:getVal('dir-address'),phone:getVal('dir-phone'),email:getVal('dir-email'),years:getVal('dir-years'),notes:getVal('dir-notes'),ts:new Date().toLocaleDateString()};
+      const existing=JSON.parse(localStorage.getItem('ljh_directory')||'[]');existing.push(entry);localStorage.setItem('ljh_directory',JSON.stringify(existing));
+      document.getElementById('dir-success').classList.add('show');this.reset();renderDirectoryEntries();
+    });
+    function renderDirectoryEntries(){
+      const data=JSON.parse(localStorage.getItem('ljh_directory')||'[]');
+      const container=document.getElementById('registered-entries');
+      if(!data.length){container.innerHTML='';return;}
+      const colors=['#4a7c59','#5b8fa8','#7a5c3a','#7a5c8a','#c8b89a'];
+      container.innerHTML=data.map(e=>{const initials=(e.fname[0]||'')+(e.lname[0]||'');const color=colors[Math.abs(e.fname.charCodeAt(0)-65)%colors.length];return`<div class="registered-entry"><div class="reg-avatar" style="background:${color};">${initials}</div><div class="reg-info"><h4>${e.fname} ${e.lname}</h4><p>${e.address}${e.years?' · '+e.years:''}</p>${e.notes?`<p style="font-style:italic;">${e.notes}</p>`:''}</div></div>`;}).join('');
+    }
+    renderDirectoryEntries();
+
+    /* --- CONTACT FORM --- */
+    document.getElementById('contact-form').addEventListener('submit',function(e){
+      e.preventDefault(); let valid=true;
+      valid=setError('con-name','con-name-err',!getVal('con-name'))&&valid;
+      valid=setError('con-email','con-email-err',!isValidEmail(getVal('con-email')))&&valid;
+      valid=setError('con-subject','con-subject-err',!getVal('con-subject'))&&valid;
+      valid=setError('con-message','con-message-err',!getVal('con-message'))&&valid;
+      if(!valid)return;
+      document.getElementById('con-success').classList.add('show');this.reset();
+    });
+  </script>
+</body>
+</html>
